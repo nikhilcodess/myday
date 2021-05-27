@@ -10,7 +10,7 @@ router.get("/", ensureGuest, (req, res) => {
   });
 });
 
-router.get("/dashboard", ensureAuth, (req, res) => {
+router.get("/dashboard", ensureAuth, async (req, res) => {
   try {
     const stories = await Story.find({ user: req.user.id }).lean();
     res.render("dashboard", {
@@ -19,6 +19,7 @@ router.get("/dashboard", ensureAuth, (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.render("error/500");
   }
 });
 
