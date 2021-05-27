@@ -10,39 +10,64 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const connectDB = require("./config/db");
 
-//load config
+// Load config
 dotenv.config({ path: "./config/config.env" });
 
-//passport config
+// Passport config
 require("./config/passport")(passport);
 
 connectDB();
 
 const app = express();
 
+// Body parser
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-//Logging
+// Method override
+app.use(
+  methodOverride(function (req, res) {
+    if (req.body && typeof req.body === "object" && "_method" in req.body) {
+      // look in urlencoded POST bodies and delete it
+      let method = req.body._method;
+      delete req.body._method;
+      return method;
+    }
+  })
+);
+
+// Logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-//handlebars helpers
-const { formatDate, stripTags, truncate, editIcon } = require("./helpers/hbs");
+// Handlebars Helpers
+const {
+  formatDate,
+  stripTags,
+  truncate,
+  editIcon,
+  select,
+} = require("./helpers/hbs");
 
-//Handlebars
+// Handlebars
 app.engine(
   ".hbs",
   exphbs({
-    helpers: { formatDate, stripTags, truncate, editIcon },
+    helpers: {
+      formatDate,
+      stripTags,
+      truncate,
+      editIcon,
+      select,
+    },
     defaultLayout: "main",
     extname: ".hbs",
   })
 );
 app.set("view engine", ".hbs");
 
-//sessions
+// Sessions
 app.use(
   session({
     secret: "keyboard cat",
@@ -55,25 +80,26 @@ app.use(
   })
 );
 
-//passport middleware
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-//global var
+// Set global var
 app.use(function (req, res, next) {
   res.locals.user = req.user || null;
   next();
 });
 
-//Static folder
+// Static folder
 app.use(express.static(path.join(__dirname, "public")));
 
-//Routes
+// Routes
 app.use("/", require("./routes/index"));
 app.use("/auth", require("./routes/auth"));
 app.use("/stories", require("./routes/stories"));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+
 app.listen(
   PORT,
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
