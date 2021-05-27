@@ -19,13 +19,26 @@ connectDB();
 
 const app = express();
 
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
 //Logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+//handlebars helpers
+const { formatDate, stripTags, truncate } = require("./helpers/hbs");
+
 //Handlebars
-app.engine(".hbs", exphbs({ defaultLayout: "main", extname: ".hbs" }));
+app.engine(
+  ".hbs",
+  exphbs({
+    helpers: { formatDate, stripTags, truncate },
+    defaultLayout: "main",
+    extname: ".hbs",
+  })
+);
 app.set("view engine", ".hbs");
 
 //sessions

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const StorySchema = new mongoose.Schema({
-  googleId: {
+  title: {
     type: String,
     required: true,
     trim: true,
